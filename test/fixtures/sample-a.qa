@@ -1,0 +1,8 @@
+GROUP: User Authentication
+
+ACTION: Create a new owner account using the owner registration form. Use all
+fields available.
+EXPECT: The new account should be created successfully.
+-
+ACTION: Attempt to create a user that already exists in the system.
+EXPECT: An error should be returned.
