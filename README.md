@@ -41,7 +41,8 @@ instructions will be left ungrouped (no header) at the top of the sheet.
 
 **Multiple Files**
 
-When using multiple files, it's valid to use the same group name. T
+When using multiple files, it's valid to use the same group name. Doing so will
+merge the instructions together during sheet generation.
 
 ```
 GROUP User Authentication
