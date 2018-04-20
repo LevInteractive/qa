@@ -28,10 +28,8 @@ var (
 // Token represents a single action w/ expection. This is a building block for
 // the complete sheet.
 type Token struct {
-	group  bytes.Buffer
-	action bytes.Buffer
-	expect bytes.Buffer
-	deps   bytes.Buffer
+	sectionType string
+	data        bytes.Buffer
 }
 
 // type sheet struct {
@@ -54,10 +52,8 @@ func cleanString(str string, lead string) string {
 
 // Used to determine if two tokens are the exact same.
 func tokensMatch(t1 *Token, t2 *Token) bool {
-	return t1.group.String() == t2.group.String() &&
-		t1.action.String() == t2.action.String() &&
-		t1.expect.String() == t2.expect.String() &&
-		t1.deps.String() == t2.deps.String()
+	return t1.sectionType == t2.sectionType &&
+		t1.data.String() == t2.data.String()
 }
 
 // Tokenize will take in a file path and turn it into tokens.
@@ -82,13 +78,13 @@ func Tokenize(file string) []*Token {
 		ln := scanner.Text()
 
 		if groupRe.MatchString(ln) {
-			section = groupLeader
+			tokenRow.section = groupLeader
 		} else if actionRe.MatchString(ln) {
-			section = actionLeader
+			tokenRow.section = actionLeader
 		} else if expectRe.MatchString(ln) {
-			section = expectLeader
+			tokenRow.section = expectLeader
 		} else if depsRe.MatchString(ln) {
-			section = depsLeader
+			tokenRow.section = depsLeader
 		} else if breakRe.MatchString(ln) {
 			tokens = append(tokens, tokenRow)
 			tokenRow = &Token{}
@@ -109,8 +105,8 @@ func Tokenize(file string) []*Token {
 				tokenRow.expect.WriteString(str)
 				tokenRow.expect.WriteString(" ")
 			case depsLeader:
-				tokenRow.expect.WriteString(str)
-				tokenRow.expect.WriteString(" ")
+				tokenRow.deps.WriteString(str)
+				tokenRow.deps.WriteString(" ")
 			}
 		}
 	}

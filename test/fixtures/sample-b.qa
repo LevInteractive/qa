@@ -1,0 +1,8 @@
+GROUP: Referral UI
+DEPS: sample-c
+-
+ACTION: Some action that relies on the actions within sample-c.
+EXPECT: Expectation
+-
+ACTION: Another actions.
+EXPECT: Another expectation.
