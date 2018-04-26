@@ -27,21 +27,3 @@ func TestList(t *testing.T) {
 		t.Fatalf("wrong file name: %v - should be sample-c.qa", files[2])
 	}
 }
-
-func TestTokenize(t *testing.T) {
-	sampleA := Tokenize(getFile("sample-a.qa"))
-	for _, t := range sampleA {
-		fmt.Println("group")
-		fmt.Println(t.group.String())
-		fmt.Println("expect")
-		fmt.Println(t.expect.String())
-		fmt.Println("action")
-		fmt.Println(t.action.String())
-		fmt.Println("deps")
-		fmt.Println(t.deps.String())
-	}
-	fmt.Println(sampleA)
-	if len(sampleA) != 5 {
-		t.Fatalf("expected sample-a to have 5 tokens. found %v", len(sampleA))
-	}
-}

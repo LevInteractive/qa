@@ -2,10 +2,7 @@ package scanner
 
 import (
 	"bytes"
-	"regexp"
 )
-
-var splitRegexp = regexp.MustCompile(" ")
 
 const (
 	// ACTION : the action
@@ -33,8 +30,8 @@ type ActionExpect struct {
 // ActionExpectCollection is a list
 type ActionExpectCollection []*ActionExpect
 
-// Group is
-type Group struct {
+// Document is
+type Document struct {
 	ID       int64
 	Name     bytes.Buffer
 	Deps     bytes.Buffer
@@ -47,12 +44,12 @@ func write(b *bytes.Buffer, s string) {
 }
 
 // Add new action/expect test on the stack.
-func addNewExpectTest(group *Group) {
+func addNewExpectTest(group *Document) {
 	newTest := &ActionExpect{}
 	group.Tests = append(group.Tests, newTest)
 }
 
-func consumeBuffer(b *bytes.Buffer, group *Group, lastToken *string, isBr bool) {
+func consumeBuffer(b *bytes.Buffer, group *Document, lastToken *string, isBr bool) {
 	word := b.String()
 	switch word { // Check to see if word is identifier.
 	case GROUP:
@@ -95,9 +92,9 @@ func consumeBuffer(b *bytes.Buffer, group *Group, lastToken *string, isBr bool) 
 }
 
 // Scan the text
-func Scan(content string) *Group {
+func Scan(content string) *Document {
 	// The group that will be populated.
-	group := &Group{}
+	group := &Document{}
 
 	// Store the last identifier/token we care about so we know where to append
 	// the non-ident chars.

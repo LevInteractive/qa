@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
+
+	"github.com/LevInteractive/qa/scanner"
 )
 
 // List all .qa files in a directory.
@@ -27,6 +30,25 @@ func List(dir string) []string {
 }
 
 func main() {
-	files := List(os.Args[1])
-	fmt.Println(files)
+	var dir string
+
+	if len(os.Args) != 2 {
+		dir = "./"
+	} else {
+		dir = os.Args[1]
+	}
+
+	files := List(dir)
+
+	documents := make([]*scanner.Document, 0)
+
+	for _, file := range files {
+		dat, err := ioutil.ReadFile(file)
+		if err != nil {
+			panic(err)
+		}
+		documents = append(documents, scanner.Scan(string(dat)))
+	}
+
+	fmt.Println(documents)
 }
