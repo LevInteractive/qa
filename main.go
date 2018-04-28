@@ -8,6 +8,7 @@ import (
 
 	"github.com/LevInteractive/qa/scanner"
 	"github.com/LevInteractive/qa/transform"
+	"github.com/LevInteractive/qa/transform/csv"
 )
 
 // List all .qa files in a directory.
@@ -50,5 +51,8 @@ func main() {
 		documents = append(documents, scanner.Scan(string(dat)))
 	}
 
-	transform.CSV(documents)
+	docmap := make(transform.Docmap)
+	transform.CreateDocmap(documents, docmap)
+
+	csv.Gen(docmap)
 }

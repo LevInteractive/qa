@@ -6,27 +6,14 @@ import (
 	"github.com/LevInteractive/qa/scanner"
 )
 
-// DocmapType is a map of documents grouped by group name and properly ordered
+// Docmap is a map of documents grouped by group name and properly ordered
 // by the priority number.
-type DocmapType map[string][]*scanner.Document
+type Docmap map[string][]*scanner.Document
 
-// Check to see if the doc passed can fit somewhere on the docmap
-func satisfiesDocDeps(doc *scanner.Document, docmap DocmapType) bool {
-	deps := strings.Split(strings.ToLower(doc.Deps.String()), ",")
-	satisfied := false
-
-	for _, dep := range deps {
-		if _, ok := docmap[strings.TrimSpace(dep)]; ok == false {
-			satisfied = true
-			break
-		}
-	}
-
-	return satisfied
-}
-
-// Gen a fresh DocmapType which will be used by transformers.
-func Gen(docs scanner.Documents, docmap DocmapType) {
+// CreateDocmap create fresh Docmap which will be used by transformers. It
+// depends on a collection of documents returned from the scanner. These can be
+// raw and unsorted.
+func CreateDocmap(docs scanner.Documents, docmap Docmap) {
 	unsatisfied := make([]*scanner.Document, 0)
 
 	for _, doc := range docs {
@@ -46,6 +33,21 @@ func Gen(docs scanner.Documents, docmap DocmapType) {
 	}
 
 	if len(unsatisfied) > 0 {
-		Gen(unsatisfied, docmap)
+		CreateDocmap(unsatisfied, docmap)
 	}
+}
+
+// Check to see if the doc passed can fit somewhere on the docmap
+func satisfiesDocDeps(doc *scanner.Document, docmap Docmap) bool {
+	deps := strings.Split(strings.ToLower(doc.Deps.String()), ",")
+	satisfied := false
+
+	for _, dep := range deps {
+		if _, ok := docmap[strings.TrimSpace(dep)]; ok == false {
+			satisfied = true
+			break
+		}
+	}
+
+	return satisfied
 }
