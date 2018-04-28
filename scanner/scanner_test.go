@@ -6,17 +6,29 @@ import (
 	"testing"
 )
 
-func TestScanner(t *testing.T) {
-	dat, err := ioutil.ReadFile("../test/fixtures/sample-a.qa")
+func printDoc(d *Document) {
+	fmt.Printf("Name: %v\n", d.Name.String())
+	fmt.Printf("Action 1: %v\n", d.Tests[0].Action.String())
+	fmt.Printf("Expect 1: %v\n", d.Tests[0].Expect.String())
+	fmt.Printf("Action 2: %v\n", d.Tests[1].Action.String())
+	fmt.Printf("Expect 2: %v\n", d.Tests[1].Expect.String())
+	fmt.Printf("Priority: %v\n", d.Priority.String())
+	fmt.Printf("Deps: %v\n", d.Deps.String())
+}
+
+func readFile(f string) string {
+	dat, err := ioutil.ReadFile(f)
 	if err != nil {
 		panic(err)
 	}
+	return string(dat)
+}
 
-	g := Scan(string(dat))
-	fmt.Println(g.Name.String())
-	fmt.Println(g.Tests[0].Action.String())
-	fmt.Println(g.Tests[0].Expect.String())
+func TestScanner(t *testing.T) {
+	a := Scan(readFile("../test/fixtures/sample-a.qa"))
+	b := Scan(readFile("../test/fixtures/sample-b.qa"))
 
-	fmt.Println(g.Tests[1].Action.String())
-	fmt.Println(g.Tests[1].Expect.String())
+	// @TODO write tests.
+	printDoc(a)
+	printDoc(b)
 }

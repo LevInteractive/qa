@@ -16,3 +16,5 @@ EXPECT
 An error should be returned.
 
 Some more information about this expection. Yadda yadda.
+
+PRIORITY 3

@@ -1,8 +1,8 @@
 GROUP: Referral UI
-DEPS: sample-a
--
+DEPS: User Authentication
+
 ACTION: User should login.
 EXPECT: User will be signed in as a basic role.
--
+
 ACTION: User should invite a friend.
 EXPECT: The recipient email should be sent successfully.

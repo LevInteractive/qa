@@ -2,22 +2,14 @@ package scanner
 
 import (
 	"bytes"
+	"strings"
 )
 
 const (
-	// ACTION : the action
-	ACTION = "ACTION"
-
-	// EXPECT : the expect
-	EXPECT = "EXPECT"
-
-	// GROUP : the group
-	GROUP = "GROUP"
-
-	// DEPS : the group
-	DEPS = "DEPS"
-
-	// PRIORITY : is something
+	ACTION   = "ACTION"
+	EXPECT   = "EXPECT"
+	GROUP    = "GROUP"
+	DEPS     = "DEPS"
 	PRIORITY = "PRIORITY"
 )
 
@@ -33,40 +25,30 @@ type ActionExpectCollection []*ActionExpect
 // Document is
 type Document struct {
 	ID       int64
-	Name     bytes.Buffer
+	Priority bytes.Buffer
 	Deps     bytes.Buffer
-	Priority int
+	Name     bytes.Buffer
 	Tests    ActionExpectCollection
 }
 
+// Documents are a collection of *Documents.
+type Documents []*Document
+
 func write(b *bytes.Buffer, s string) {
-	b.Write([]byte(s + " "))
+	b.Write([]byte(strings.Trim(s, " ") + " "))
 }
 
 // Add new action/expect test on the stack.
-func addNewExpectTest(group *Document) {
+func addNewExpectTest(document *Document) {
 	newTest := &ActionExpect{}
-	group.Tests = append(group.Tests, newTest)
+	document.Tests = append(document.Tests, newTest)
 }
 
-func consumeBuffer(b *bytes.Buffer, group *Document, lastToken *string, isBr bool) {
+func consumeBuffer(b *bytes.Buffer, document *Document, lastToken *string, isBr bool) {
 	word := b.String()
 	switch word { // Check to see if word is identifier.
-	case GROUP:
-		*lastToken = GROUP
-		b.Reset()
-	case ACTION:
-		*lastToken = ACTION
-		addNewExpectTest(group)
-		b.Reset()
-	case EXPECT:
-		*lastToken = EXPECT
-		b.Reset()
-	case DEPS:
-		*lastToken = DEPS
-		b.Reset()
-	case PRIORITY:
-		*lastToken = PRIORITY
+	case GROUP, ACTION, EXPECT, DEPS, PRIORITY:
+		*lastToken = word
 		b.Reset()
 	default: // The full word isn't an indentifier.
 		// If the last rune was a line break, preserve it.
@@ -76,16 +58,20 @@ func consumeBuffer(b *bytes.Buffer, group *Document, lastToken *string, isBr boo
 
 		switch *lastToken {
 		case GROUP:
-			write(&group.Name, word)
+			write(&document.Name, word)
 			b.Reset()
-		case ACTION:
-			write(&group.Tests[len(group.Tests)-1].Action, word)
-			b.Reset()
-		case EXPECT:
-			write(&group.Tests[len(group.Tests)-1].Expect, word)
+		case PRIORITY:
+			write(&document.Priority, word)
 			b.Reset()
 		case DEPS:
-			write(&group.Deps, word)
+			write(&document.Deps, word)
+			b.Reset()
+		case ACTION:
+			addNewExpectTest(document)
+			write(&document.Tests[len(document.Tests)-1].Action, word)
+			b.Reset()
+		case EXPECT:
+			write(&document.Tests[len(document.Tests)-1].Expect, word)
 			b.Reset()
 		}
 	}
@@ -93,8 +79,8 @@ func consumeBuffer(b *bytes.Buffer, group *Document, lastToken *string, isBr boo
 
 // Scan the text
 func Scan(content string) *Document {
-	// The group that will be populated.
-	group := &Document{}
+	// The document that will be populated.
+	document := &Document{}
 
 	// Store the last identifier/token we care about so we know where to append
 	// the non-ident chars.
@@ -105,13 +91,13 @@ func Scan(content string) *Document {
 
 	for _, rune := range content {
 		if rune == '\n' || rune == '\r' {
-			consumeBuffer(&currentBuffer, group, &lastToken, true)
+			consumeBuffer(&currentBuffer, document, &lastToken, true)
 		} else if rune == ' ' {
-			consumeBuffer(&currentBuffer, group, &lastToken, false)
+			consumeBuffer(&currentBuffer, document, &lastToken, false)
 		} else {
 			currentBuffer.Write([]byte(string(rune)))
 		}
 	}
 
-	return group
+	return document
 }

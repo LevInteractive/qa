@@ -1,13 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
 
 	"github.com/LevInteractive/qa/scanner"
+	"github.com/LevInteractive/qa/transform"
 )
 
 // List all .qa files in a directory.
@@ -50,5 +50,5 @@ func main() {
 		documents = append(documents, scanner.Scan(string(dat)))
 	}
 
-	fmt.Println(documents)
+	transform.CSV(documents)
 }
