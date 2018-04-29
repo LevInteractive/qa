@@ -3,101 +3,138 @@ package scanner
 import (
 	"bytes"
 	"strings"
+
+	"github.com/LevInteractive/qa/document"
 )
+
+// Config for main scanner method
+type Config struct {
+
+	// AllowLinebreaks will cause the parser to respect line breaks.
+	AllowLinebreaks bool
+}
+
+type token int
 
 const (
-	ACTION   = "ACTION"
-	EXPECT   = "EXPECT"
-	GROUP    = "GROUP"
-	DEPS     = "DEPS"
-	PRIORITY = "PRIORITY"
+	// ILLEGAL represents a non-identifier.
+	ILLEGAL token = iota
+	// ACTION should be an action a tester should take.
+	ACTION
+	// EXPECT should be an expectation a tester should have.
+	EXPECT
+	// GROUP is a human friendly identifier for the group of tests.
+	GROUP
+	// DEPS represents other groups that should come before this one.
+	DEPS
+	// PRIORITY allows for order within a collection of groups.
+	PRIORITY
 )
 
-// ActionExpect represents each word.
-type ActionExpect struct {
-	Action bytes.Buffer
-	Expect bytes.Buffer
-}
-
-// ActionExpectCollection is a list
-type ActionExpectCollection []*ActionExpect
-
-// Document is
-type Document struct {
-	ID       int64
-	Priority bytes.Buffer
-	Deps     bytes.Buffer
-	Name     bytes.Buffer
-	Tests    ActionExpectCollection
-}
-
-// Documents are a collection of *Documents.
-type Documents []*Document
-
-func write(b *bytes.Buffer, s string) {
-	b.Write([]byte(strings.Trim(s, " ") + " "))
-}
-
 // Add new action/expect test on the stack.
-func addNewExpectTest(document *Document) {
-	newTest := &ActionExpect{}
-	document.Tests = append(document.Tests, newTest)
+func addNewExpectTest(doc *document.Document) {
+	newTest := &document.ActionExpect{}
+	doc.Tests = append(doc.Tests, newTest)
 }
 
-func consumeBuffer(b *bytes.Buffer, document *Document, lastToken *string, isBr bool) {
+func convertStringToToken(s string) token {
+	switch s {
+	case "ACTION":
+		return ACTION
+	case "EXPECT":
+		return EXPECT
+	case "GROUP":
+		return GROUP
+	case "DEPS":
+		return DEPS
+	case "PRIORITY":
+		return PRIORITY
+	default:
+		return ILLEGAL
+	}
+}
+
+// Called when the buffer needs to be consumed by a step.
+func consumeBuffer(
+	b *bytes.Buffer,
+	doc *document.Document,
+	lastToken *token,
+	testIndex *int,
+) {
 	word := b.String()
-	switch word { // Check to see if word is identifier.
-	case GROUP, ACTION, EXPECT, DEPS, PRIORITY:
-		*lastToken = word
-		b.Reset()
-	default: // The full word isn't an indentifier.
-		// If the last rune was a line break, preserve it.
-		if isBr {
-			word = word + "\n"
+	tok := convertStringToToken(strings.TrimSpace(word))
+
+	if tok != ILLEGAL {
+		if tok == ACTION {
+			*testIndex = *testIndex + 1
+			addNewExpectTest(doc)
 		}
 
+		*lastToken = tok
+		b.Reset()
+	} else {
 		switch *lastToken {
 		case GROUP:
-			write(&document.Name, word)
+			doc.Name.WriteString(word)
 			b.Reset()
 		case PRIORITY:
-			write(&document.Priority, word)
+			doc.Priority.WriteString(word)
 			b.Reset()
 		case DEPS:
-			write(&document.Deps, word)
+			doc.Deps.WriteString(word)
 			b.Reset()
 		case ACTION:
-			addNewExpectTest(document)
-			write(&document.Tests[len(document.Tests)-1].Action, word)
+			doc.Tests[*testIndex].Action.WriteString(word)
 			b.Reset()
 		case EXPECT:
-			write(&document.Tests[len(document.Tests)-1].Expect, word)
+			doc.Tests[*testIndex].Expect.WriteString(word)
 			b.Reset()
 		}
 	}
 }
 
 // Scan the text
-func Scan(content string) *Document {
+func Scan(content string, c Config) *document.Document {
 	// The document that will be populated.
-	document := &Document{}
+	doc := &document.Document{}
 
 	// Store the last identifier/token we care about so we know where to append
 	// the non-ident chars.
-	var lastToken string
+	var lastToken token
 
 	// Current set of runes that are being looped.
 	var currentBuffer bytes.Buffer
 
-	for _, rune := range content {
-		if rune == '\n' || rune == '\r' {
-			consumeBuffer(&currentBuffer, document, &lastToken, true)
-		} else if rune == ' ' {
-			consumeBuffer(&currentBuffer, document, &lastToken, false)
+	testIndex, l, eof, prevRune := -1, len(content), false, rune(0)
+
+	for idx, rune := range content {
+		eof = idx == l-1
+		if rune == '\n' || rune == '\r' || rune == ' ' { // Consume on whitespace.
+
+			// Add a white space if:
+			// 1. If the previous rune was not a white space.
+			// 2. If the current rune is a white space.
+			// 3. We aren't at the EOF.
+			if prevRune != ' ' && rune == ' ' {
+				currentBuffer.WriteString(" ")
+			} else if c.AllowLinebreaks == true && rune == '\n' || rune == '\r' {
+				currentBuffer.WriteString("\n")
+			}
+
+			consumeBuffer(
+				&currentBuffer,
+				doc,
+				&lastToken,
+				&testIndex,
+			)
+		} else if eof == true { // Write and consume on EOF.
+			currentBuffer.WriteString(string(rune))
+			consumeBuffer(&currentBuffer, doc, &lastToken, &testIndex)
 		} else {
-			currentBuffer.Write([]byte(string(rune)))
+			currentBuffer.WriteString(string(rune))
 		}
+		prevRune = rune
 	}
 
-	return document
+	return doc
 }

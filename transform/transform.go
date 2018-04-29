@@ -3,18 +3,14 @@ package transform
 import (
 	"strings"
 
-	"github.com/LevInteractive/qa/scanner"
+	"github.com/LevInteractive/qa/document"
 )
-
-// Docmap is a map of documents grouped by group name and properly ordered
-// by the priority number.
-type Docmap map[string][]*scanner.Document
 
 // CreateDocmap create fresh Docmap which will be used by transformers. It
 // depends on a collection of documents returned from the scanner. These can be
 // raw and unsorted.
-func CreateDocmap(docs scanner.Documents, docmap Docmap) {
-	unsatisfied := make([]*scanner.Document, 0)
+func CreateDocmap(docs document.Documents, docmap document.Docmap) {
+	unsatisfied := make(document.Documents, 0)
 
 	for _, doc := range docs {
 
@@ -38,16 +34,14 @@ func CreateDocmap(docs scanner.Documents, docmap Docmap) {
 }
 
 // Check to see if the doc passed can fit somewhere on the docmap
-func satisfiesDocDeps(doc *scanner.Document, docmap Docmap) bool {
+func satisfiesDocDeps(doc *document.Document, docmap document.Docmap) bool {
 	deps := strings.Split(strings.ToLower(doc.Deps.String()), ",")
-	satisfied := false
 
 	for _, dep := range deps {
 		if _, ok := docmap[strings.TrimSpace(dep)]; ok == false {
-			satisfied = true
-			break
+			return true
 		}
 	}
 
-	return satisfied
+	return false
 }

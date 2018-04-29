@@ -41,7 +41,7 @@ func main() {
 
 	files := List(dir)
 
-	documents := make([]*scanner.Document, 0)
+	documents := make([]*Document, 0)
 
 	for _, file := range files {
 		dat, err := ioutil.ReadFile(file)

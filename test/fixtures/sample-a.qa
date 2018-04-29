@@ -1,20 +1,9 @@
 GROUP User Authentication
 
-ACTION Create a new owner account using the owner registration form. Use all
-fields available.
-EXPECT The new account should be created successfully.
+ACTION Apples, Oranges
+EXPECT They are fruits.
 
-ACTION Attempt to create a user that already exists in the system.
-EXPECT An error should be returned.
-
-ACTION
-Formatted a little differently.
-
-Attempt to create a user that already exists in the system.
-
-EXPECT
-An error should be returned.
-
-Some more information about this expection. Yadda yadda.
+ACTION Spinach and turnips
+EXPECT They are vegetables.
 
 PRIORITY 3
