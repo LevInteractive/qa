@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"regexp"
 
+	"github.com/LevInteractive/qa/document"
 	"github.com/LevInteractive/qa/scanner"
 	"github.com/LevInteractive/qa/transform"
 	"github.com/LevInteractive/qa/transform/csv"
@@ -41,18 +42,21 @@ func main() {
 
 	files := List(dir)
 
-	documents := make([]*Document, 0)
+	config := scanner.Config{
+		AllowLinebreaks: false,
+	}
+
+	documents := make(document.Documents, 0)
 
 	for _, file := range files {
 		dat, err := ioutil.ReadFile(file)
 		if err != nil {
 			panic(err)
 		}
-		documents = append(documents, scanner.Scan(string(dat)))
+		documents = append(documents, scanner.Scan(string(dat), config))
 	}
 
-	docmap := make(transform.Docmap)
-	transform.CreateDocmap(documents, docmap)
+	groups := transform.Make(documents)
 
-	csv.Gen(docmap)
+	csv.Gen(groups)
 }

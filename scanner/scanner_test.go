@@ -29,8 +29,8 @@ func TestGeneralFormatting(t *testing.T) {
 	for _, test := range tests {
 		doc := Scan(test.in, test.c)
 
-		if doc.Name.String() != test.out {
-			t.Fatalf("Expected \"%v\", but got \"%v\"", test.out, doc.Name.String())
+		if doc.Group.String() != test.out {
+			t.Fatalf("Expected \"%v\", but got \"%v\"", test.out, doc.Group.String())
 		}
 	}
 }
@@ -39,7 +39,7 @@ func TestScanner(t *testing.T) {
 	a := Scan(readFile("../test/fixtures/sample-a.qa"), Config{})
 	var v string
 
-	v = a.Name.String()
+	v = a.Group.String()
 	if v != "User Authentication" {
 		t.Fatalf("Expected name 'User Authentication', but got '%v'", v)
 	}

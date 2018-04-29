@@ -1,13 +1,15 @@
 package csv
 
 import (
-	"fmt"
+	"encoding/csv"
+	"log"
+	"os"
 
 	"github.com/LevInteractive/qa/document"
 )
 
 func headerRow() []string {
-	return []string{"", "Expected Behavior", "Status", "Notes"}
+	return []string{"Action", "Expect", "Status", "Notes"}
 }
 
 func docHeaderRow(title string) []string {
@@ -19,17 +21,34 @@ func docRow(action string, expect string) []string {
 }
 
 // Gen converts Documents to CSV.
-func Gen(docmap document.Docmap) {
+func Gen(groups document.OrderedGroups) {
 	records := [][]string{}
 	records = append(records, headerRow())
 
-	for k, v := range docmap {
-		records = append(records, docHeaderRow(k))
+	for _, g := range groups {
+		records = append(records, docHeaderRow(g.Name))
 
-		for _, doc := range v {
+		for _, doc := range g.Docs {
 			for _, test := range doc.Tests {
-				fmt.Printf("name within: %v\n", test.Expect.String())
+				records = append(
+					records,
+					docRow(test.Action.String(), test.Expect.String()),
+				)
 			}
 		}
+	}
+	w := csv.NewWriter(os.Stdout)
+
+	for _, record := range records {
+		if err := w.Write(record); err != nil {
+			log.Fatalln("error writing record to csv:", err)
+		}
+	}
+
+	// Write any buffered data to the underlying writer (standard output).
+	w.Flush()
+
+	if err := w.Error(); err != nil {
+		log.Fatal(err)
 	}
 }

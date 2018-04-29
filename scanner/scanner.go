@@ -75,7 +75,7 @@ func consumeBuffer(
 	} else {
 		switch *lastToken {
 		case GROUP:
-			doc.Name.WriteString(word)
+			doc.Group.WriteString(word)
 			b.Reset()
 		case PRIORITY:
 			doc.Priority.WriteString(word)
