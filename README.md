@@ -20,7 +20,7 @@ Supported operating systems:
 ## Getting Started
 
 This is a simple application which allows software engineers to specify Quality
-Assurance instruction along side actual code files.
+Assurance instruction **for humans** along side actual code files.
 
 **Mission**
 
