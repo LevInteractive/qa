@@ -19,8 +19,10 @@ Supported operating systems:
 
 ## Getting Started
 
-This is a simple application which allows software engineers to specify Quality
-Assurance instruction along side actual code files.
+This is a simple CLI tool which allows software engineers to specify Quality
+Assurance instruction along side actual code files. `qa` will ultimately
+generate a well organized spreadsheet which non-technical testers can use to
+perform a high level test on the application.
 
 **Mission**
 
