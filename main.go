@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -12,33 +14,31 @@ import (
 	"github.com/LevInteractive/qa/transform/csv"
 )
 
-// List all .qa files in a directory.
-func List(dir string) []string {
-	extRe := regexp.MustCompile("\\.qa$")
-	fileList := make([]string, 0)
+var helptxt = `
+Qa
 
-	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
-		if extRe.MatchString(path) {
-			fileList = append(fileList, path)
-		}
-		return err
-	})
-
-	if err != nil {
-		panic(err)
-	}
-
-	return fileList
-}
+1. Navigate/cd into the root of your project with the .qa files.
+2. Run: qa . > qa.csv
+3. Done!
+`
 
 func main() {
+	helpMode := flag.Bool("h", false, "help")
+	flag.Parse()
+
+	if *helpMode == true {
+		fmt.Println(helptxt)
+		return
+	}
+
 	var dir string
 
-	if len(os.Args) != 2 {
-		dir = "./"
-	} else {
-		dir = os.Args[1]
+	if len(flag.Args()) == 0 {
+		fmt.Println(helptxt)
+		return
 	}
+
+	dir = flag.Args()[0]
 
 	files := List(dir)
 
@@ -59,4 +59,23 @@ func main() {
 	groups := transform.Make(documents)
 
 	csv.Gen(groups)
+}
+
+// List all .qa files in a directory.
+func List(dir string) []string {
+	extRe := regexp.MustCompile("\\.qa$")
+	fileList := make([]string, 0)
+
+	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+		if extRe.MatchString(path) {
+			fileList = append(fileList, path)
+		}
+		return err
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	return fileList
 }
