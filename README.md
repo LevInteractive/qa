@@ -58,6 +58,8 @@ qa . > qa.csv
 `qa` will recurrsively walk the directory and generate a CSV based on the spec
 of the files within the project.
 
+The Qa CLI spec is quite simple at the moment: `qa [path to directory] > outputfile`
+
 ## QA Spec
 
 ```
