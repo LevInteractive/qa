@@ -15,11 +15,9 @@ import (
 )
 
 var helptxt = `
-Qa
+qa [dir] > output-file.csv
 
-1. Navigate/cd into the root of your project with the .qa files.
-2. Run: qa . > qa.csv
-3. Done!
+Full Documentation: https://github.com/LevInteractive/qa/blob/master/README.md
 `
 
 func main() {
